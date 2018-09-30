@@ -48,10 +48,21 @@ def YOLO_Model(x, WIDTH, HEIGHT, n_outputs, is_training):
 	# Output (out): 		[# of model outputs]
 	W_conv1 = weight([7,7,  3, 64], 	n_inputs=W_conv_input, name="W_conv1")
 	W_conv2 = weight([3,3,  64, 192], n_inputs=3*8, name="W_conv2")
-	W_conv3 = weight([3,3, 192, 32], n_inputs=8*12, name="W_conv3")
-	W_conv4 = weight([3,3, 32, 48], n_inputs=12*16, name="W_conv4")
-	W_conv5 = weight([3,3, 48, 48], n_inputs=16*21, name="W_conv5")
-	W_fc1   = weight([W_fc_input*48, 466], 	n_inputs=21*21, name="W_fc1")
+	W_conv3 = weight([1,1, 192, 128], n_inputs=8*12, name="W_conv3")
+	W_conv4 = weight([3,3, 128, 256], n_inputs=12*16, name="W_conv4")
+	W_conv5 = weight([1,1, 256, 256], n_inputs=16*21, name="W_conv5")
+	W_conv6 = weight([3,3, 256, 512], n_inputs=16*21, name="W_conv6")
+	W_conv7 = weight([1,1, 512, 256], n_inputs=16*21, name="W_conv7")
+	W_conv8 = weight([3,3, 256, 512], n_inputs=16*21, name="W_conv8")
+	W_conv9 = weight([1,1, 512, 512], n_inputs=16*21, name="W_conv9")
+	W_conv10 = weight([3,3, 512, 1024], n_inputs=16*21, name="W_conv10")
+	W_conv11 = weight([1,1, 1024, 512], n_inputs=16*21, name="W_conv11")
+	W_conv12 = weight([3,3, 512, 1024], n_inputs=16*21, name="W_conv12")
+	W_conv13 = weight([3,3, 1024, 1024], n_inputs=16*21, name="W_conv13")
+	W_conv15 = weight([3,3, 1024, 1024], n_inputs=16*21, name="W_conv14")
+	W_conv16 = weight([3,3, 1024, 1024], n_inputs=16*21, name="W_conv15")
+	W_conv17 = weight([3,3, 1024, 1024], n_inputs=16*21, name="W_conv16")
+	W_fc1   = weight([W_fc_input*1024, 4096], 	n_inputs=21*21, name="W_fc1")
 	W_fc2   = weight([466, 233],           	n_inputs=400, name="W_fc2")
 	W_fc3   = weight([233, 54],             	n_inputs=35, name="W_fc3")
 	W_fc4   = weight([54, 12],              	n_inputs=16, name="W_fc4")
@@ -85,18 +96,13 @@ def YOLO_Model(x, WIDTH, HEIGHT, n_outputs, is_training):
 	x = tf.reshape(x, shape=[-1, HEIGHT, WIDTH, 3])
 	print("Input Size: {}" .format(x.get_shape()))
 
-	# to normalize in hidden layers, add the normalization layer:
-	# 1. right after fc or conv layers
-	# 2. right before non-linearities
-	normalized = tf.layers.batch_normalization(x, training=is_training, trainable=True)
-	# normalized = relu(normalized)	# TESTING
-
-	conv1 = conv2d(normalized, W_conv1, B_conv1, strides=2)
+	conv1 = conv2d(x, W_conv1, B_conv1, strides=2)
 	conv1 = relu(conv1)
-	# conv1 = tanh(tf.layers.batch_normalization(conv1, training=is_training, trainable=True))
+	conv1 = max_pool2d(conv1, strides=2)
 
 	conv2 = conv2d(conv1, W_conv2, B_conv2, strides=2)
 	conv2 = relu(conv2)
+	conv2 = max_pool2d(conv2, strides=2)
 	# conv2 = tanh(tf.layers.batch_normalization(conv2, training=is_training, trainable=True))
 
 	conv3 = conv2d(conv2, W_conv3, B_conv3, strides=2)
