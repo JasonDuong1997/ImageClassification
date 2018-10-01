@@ -30,6 +30,33 @@ def bufferToImg(img_buffer):
 	return np.array(img)
 
 
+def one_hot(class_id):
+	one_hot_class = [0,0,0,0,0,0,0,0,0,0]
+
+	if (class_id == 0):
+		one_hot_class = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	elif (class_id == 1):
+		one_hot_class = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+	elif (class_id == 2):
+		one_hot_class = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+	elif (class_id == 3):
+		one_hot_class = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+	elif (class_id == 4):
+		one_hot_class = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+	elif (class_id == 5):
+		one_hot_class = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+	elif (class_id == 6):
+		one_hot_class = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+	elif (class_id == 7):
+		one_hot_class = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+	elif (class_id == 8):
+		one_hot_class = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+	elif (class_id == 9):
+		one_hot_class = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+
+	return one_hot_class
+
+
 def process_trainingData():
 	training_data = []
 
@@ -41,7 +68,7 @@ def process_trainingData():
 		data_len = 10000
 		for i in range(data_len):
 			image = bufferToImg(data[b'data'][i])
-			label = data[b'labels'][i]
+			label = one_hot(data[b'labels'][i])
 			training_data.append([image,label])
 
 	print(len(training_data))
@@ -56,14 +83,14 @@ def process_testData():
 	data_len = 10000
 	for i in range(data_len):
 		image = bufferToImg(data[b'data'][i])
-		label = data[b'labels'][i]
+		label = one_hot(data[b'labels'][i])
 		test_data.append([image,label])
 
 	np.save("test_data.npy", test_data)
 
 
 def main():
-	process_testData()
+	process_trainingData()
 
 
 main()
