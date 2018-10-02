@@ -63,7 +63,6 @@ def process_trainingData():
 	for batch_num in range(1,6):
 
 		data = unpickle("./data/data_batch_{}" .format(batch_num))
-		print(data.keys())
 
 		data_len = 10000
 		for i in range(data_len):
@@ -71,7 +70,7 @@ def process_trainingData():
 			label = one_hot(data[b'labels'][i])
 			training_data.append([image,label])
 
-	print(len(training_data))
+	np.random.shuffle(training_data)
 	np.save("training_data.npy", training_data)
 
 
@@ -86,11 +85,12 @@ def process_testData():
 		label = one_hot(data[b'labels'][i])
 		test_data.append([image,label])
 
+	np.random.shuffle(test_data)
 	np.save("test_data.npy", test_data)
 
 
 def main():
-	process_trainingData()
+	pass
 
 
 main()
