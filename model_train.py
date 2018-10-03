@@ -1,5 +1,5 @@
 import tensorflow as tf
-from model_arch import Model
+from Model_Arch import Model
 import matplotlib.pyplot as plt
 import numpy as np
 import time
@@ -34,16 +34,25 @@ def k_fold_selector(split_data, index):	# sectioning out train and test set
 
 	return train_x, train_y, test_x, test_y
 
-def early_stop(loss_check, strikes, strikeout, threshold, loss_monitor="validation"):	# checks the condition on when to finish training
-	if (loss_monitor == "validation"):
-		delta_loss = loss_check[1] - loss_check[0]
+def early_stop(data, strikes, strikeout, threshold, monitor="validation"):	# checks the condition on when to finish training
+	delta_data = data[1] - data[0]
+
+	if (monitor == "validation"):
 		# if the change in loss is less than [tolerance]% or if the loss increased, add a strike
-		if (abs(delta_loss) < abs(threshold*loss_check[0]) or delta_loss > 0):
+		if (abs(delta_data) < abs(threshold*data[0]) or delta_data > 0):
 			strikes += 1
 			if (strikes == strikeout):
 				strikes = -1
 		else:
 			strikes = 0
+
+	elif (monitor == "accuracy"):
+		# if the accuracy decreases
+		if (delta_data < 0):
+			strikes += 1
+			if (strikes == strikeout):
+				strikes = -1
+
 	return strikes
 
 def cyclical_lr(epoch, amplitude, period):	#todo make this work with decay LR
@@ -65,11 +74,11 @@ print("[Y] Train Size: {}. Test Size: {}".format(len(train_y), len(test_y)))
 
 												# Value Increase Effect ************************************************
 batch_size = 64  								# -converge into sharper minima, less iterations
-n_epochs = 500									# -increase training time, lower training loss, higher risk overfitting
-initial_learning_rate = 1e-5					# -faster training time, bigger gradient jumps
+n_epochs = 200									# -increase training time, lower training loss, higher risk overfitting
+initial_learning_rate = 4e-5					# -faster training time, bigger gradient jumps
 epsilon = 1e-5									# -smaller weight updates
-decay_rate = 0.85								# -less weight decay (smaller gradient jumps)
-epochs_per_decay = 100							# -more frequent learning rate decay (smaller and smaller gradient jumps)
+decay_rate = 0.90								# -less weight decay (smaller gradient jumps)
+epochs_per_decay = 50							# -more frequent learning rate decay (smaller and smaller gradient jumps)
 												# **********************************************************************
 steps_per_epoch = len(train_x)/batch_size
 n_outputs = 10
@@ -78,7 +87,7 @@ learning_rate = tf.train.exponential_decay(initial_learning_rate, global_step, e
 										   decay_rate, staircase=True, name="LR_Decaying")
 
 # Input Image Dimensions
-WIDTH = 32
+WIDTH  = 32
 HEIGHT = 32
 # Input Tensor Placeholders
 x = tf.placeholder("float", [None, HEIGHT, WIDTH, 3])
@@ -125,6 +134,7 @@ def ConvNN_Train(x):
 	# Learning Rate Monitor
 	graph = tf.get_default_graph()
 	lr_test = graph.get_tensor_by_name("LR_Decaying:0")
+
 
 	start = time.time()	# keeping track of total training time
 
