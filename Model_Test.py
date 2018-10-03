@@ -74,10 +74,13 @@ def main():
 			# making prediction
 			# prediction = model.eval({x: screen[0].reshape(-1, HEIGHT, WIDTH)})[0]
 			prediction = sess.run(model, feed_dict={x: screen[0].reshape(-1, HEIGHT, WIDTH)})[0]
-			print(ID2Label(np.argmax(prediction)))
+			# print(ID2Label(np.argmax(prediction)))
 
 			# adding prediction onto test photos
-			cv2.imshow("Model Test", cv2.resize(test_data[i][0], (160, 160)))
+			display_img = cv2.resize(test_data[i][0], (WIDTH*10, HEIGHT*10))
+			font = cv2.FONT_HERSHEY_SIMPLEX
+			cv2.putText(display_img,ID2Label(np.argmax(prediction)), (50, 50), font, 2, (0,0,255), 3)
+			cv2.imshow("Model Test", display_img)
 
 			i += 1
 			if (i == len(test_data) - 1):
