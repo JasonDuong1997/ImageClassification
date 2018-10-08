@@ -52,6 +52,8 @@ def early_stop(data, strikes, strikeout, threshold, monitor="validation"):	# che
 			strikes += 1
 			if (strikes == strikeout):
 				strikes = -1
+		else:
+			strikes = 0
 
 	return strikes
 
@@ -66,18 +68,19 @@ loaded_data = np.load("training_data.npy")
 
 # K-Fold Separation of Training & Test Set
 print("Separating Data into Training and Test Sets...")
-k_splits = 10
+k_splits = 5
+k_index  = 2
 k_split_data = k_fold_splitter(loaded_data, k_splits)
-train_x, train_y, test_x, test_y = k_fold_selector(k_split_data, 1)
+train_x, train_y, test_x, test_y = k_fold_selector(k_split_data, index=k_index)
 print("[X] Train Size: {}. Test Size: {}".format(len(train_x), len(test_x)))
 print("[Y] Train Size: {}. Test Size: {}".format(len(train_y), len(test_y)))
 
 												# Value Increase Effect ************************************************
 batch_size = 64  								# -converge into sharper minima, less iterations
-n_epochs = 200									# -increase training time, lower training loss, higher risk overfitting
+n_epochs = 100									# -increase training time, lower training loss, higher risk overfitting
 initial_learning_rate = 4e-5					# -faster training time, bigger gradient jumps
-epsilon = 1e-5									# -smaller weight updates
-decay_rate = 0.90								# -less weight decay (smaller gradient jumps)
+epsilon = 2e-5									# -smaller weight updates
+decay_rate = 0.85								# -less weight decay (smaller gradient jumps)
 epochs_per_decay = 50							# -more frequent learning rate decay (smaller and smaller gradient jumps)
 												# **********************************************************************
 steps_per_epoch = len(train_x)/batch_size
@@ -108,7 +111,9 @@ model_name = "./Model_Data/CNN_v{}" .format(version)
 def ConvNN_Train(x):
 	# Training Operations
 	prediction = Model(x, WIDTH, HEIGHT, n_outputs, is_training=True)
-	cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction, labels=y))
+	training_variables = tf.trainable_variables()	# getting list of trainable variables defined in the model
+	cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction, labels=y))\
+		+ tf.add_n([tf.nn.l2_loss(variable) for variable in training_variables if "B" not in variable.name])*learning_rate
 	correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 	accuracy = tf.reduce_mean(tf.cast(correct, "float"))
 
@@ -147,7 +152,7 @@ def ConvNN_Train(x):
 
 		# Early Stop Variables
 		strikes = 0		# metric for the early stopping. each time the delta loss falls under desired threshold, add a strike
-		E_val_loss_prev = 0
+		E_data_prev = 0
 		is_saved = False
 
 		# Training Model
@@ -191,14 +196,17 @@ def ConvNN_Train(x):
 
 			# Early Stopping Check
 			if (epoch >= 1):
-				strikes = early_stop([E_val_loss_prev, E_val_loss], strikes, 5, 0.005, "validation")
-				E_val_loss_prev = E_val_loss
+				strikes = early_stop([E_data_prev, E_val_acc], strikes, 5, 0.005, "accuracy")
+				E_data_prev = E_val_acc
 				print("Strikes: {}" .format(strikes))
 				if (strikes == 1):	# saving model right when validation loss starts to increase
 					print("Saving Model Checkpoint")
 					saver.save(sess, model_name)
 					pt_color = "red"	# red colored pt for increasing loss
-
+				elif (strikes > 1):
+					pt_color = "red"
+				else:
+					pt_color = "blue"
 				if (strikes == -1):	# strikeout condition
 					print("Early Stop at Epoch:{}/{}" .format(epoch, n_epochs))
 					is_saved = True
@@ -207,9 +215,10 @@ def ConvNN_Train(x):
 					plt.show()
 					break
 
-			plt.scatter(epoch, E_val_acc, c="blue")
-			#plt.scatter(epoch, E_train_acc, c="red")
-			plt.pause(0.05)
+			plt.scatter(epoch, E_val_acc, c=pt_color)
+			plt.pause(0.01)
+			plt.scatter(epoch, E_train_acc, c="green")
+			plt.pause(0.01)
 
 		end = time.time()
 		print("\nTraining Done! Time Elapsed: {} minutes" .format((end - start)/60.0))

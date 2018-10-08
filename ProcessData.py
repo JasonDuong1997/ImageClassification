@@ -1,14 +1,14 @@
 import numpy as np
 import cv2
 
-def unpickle(file):
+def unpickle(file):		# official given function to open CIFAR-10 file
     import pickle
     with open(file, 'rb') as fo:
         dict = pickle.load(fo, encoding='bytes')
     return dict
 
 
-def bufferToImg(img_buffer):
+def bufferToImg(img_buffer):	# converts CIFAR-10 buffer data to displayable image format
 	img = []
 	sq_img_dim = int(len(img_buffer)/3)
 
@@ -29,8 +29,11 @@ def bufferToImg(img_buffer):
 
 	return np.array(img)
 
+def h_flip(src_img):	# horizontally flip the images
+	return cv2.flip(src_img, 1)
 
-def one_hot(class_id):
+
+def one_hot(class_id):		# convert class id's to one-hot format
 	one_hot_class = [0,0,0,0,0,0,0,0,0,0]
 
 	if (class_id == 0):
@@ -57,7 +60,7 @@ def one_hot(class_id):
 	return one_hot_class
 
 
-def process_trainingData():
+def process_trainingData():	# save training data into np.array format and randomizing order
 	training_data = []
 
 	for batch_num in range(1,6):
@@ -74,7 +77,7 @@ def process_trainingData():
 	np.save("training_data.npy", training_data)
 
 
-def process_testData():
+def process_testData():	# save testing data into np.array format and randomizing order
 	data = unpickle("./data/test_batch")
 
 	test_data = []
@@ -89,8 +92,26 @@ def process_testData():
 	np.save("test_data.npy", test_data)
 
 
+def data_augment(data_set):	# augmenting data set
+	data_aug = []
+	for data_pt in data_set:
+		data_aug.append([data_pt[0], data_pt[1]])
+		data_aug.append([h_flip(data_pt[0]), data_pt[1]])
+
+	np.random.shuffle(data_aug)
+	print(len(data_aug))
+	return data_aug
+
+
 def main():
-	pass
+	training_data = np.load("training_data.npy")
+	testing_data = np.load("test_data.npy")
+
+	training_data_aug = data_augment(training_data)
+	testing_data_aug = data_augment(testing_data)
+
+	np.save("training_data.npy", testing_data_aug)
+	np.save("testing_data.npy", testing_data_aug)
 
 
 main()
