@@ -25,7 +25,7 @@ version = "1"
 model_name = "./Model_Data/CNN_v{}" .format(version)
 
 
-def ID2Label(id):
+def ID2Label(id):	# converts label id's to object name
 	id2labelMap = {0: "airplane",
 				   1: "car",
 				   2: "bird",
