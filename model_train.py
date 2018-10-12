@@ -77,7 +77,7 @@ print("[Y] Train Size: {}. Test Size: {}".format(len(train_y), len(test_y)))
 
 												# Value Increase Effect ************************************************
 batch_size = 64  								# -converge into sharper minima, less iterations
-n_epochs = 100									# -increase training time, lower training loss, higher risk overfitting
+n_epochs = 300									# -increase training time, lower training loss, higher risk overfitting
 initial_learning_rate = 4e-5					# -faster training time, bigger gradient jumps
 epsilon = 2e-5									# -smaller weight updates
 decay_rate = 0.85								# -less weight decay (smaller gradient jumps)
@@ -133,8 +133,8 @@ def ConvNN_Train(x):
 	plt.xticks(np.arange(0, x_max, x_scale))
 	plt.yticks(np.arange(0, y_max, y_scale))
 	plt.xlabel("Epoch Number")
-	plt.ylabel("Epoch Loss")
-	plt.title("Epoch Loss Curve")
+	plt.ylabel("Accuracy")
+	plt.title("Training and Testing Accuracy ")
 
 	# Learning Rate Monitor
 	graph = tf.get_default_graph()

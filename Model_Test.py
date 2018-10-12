@@ -26,28 +26,17 @@ model_name = "./Model_Data/CNN_v{}" .format(version)
 
 
 def ID2Label(id):
-	if (id == 0):
-		return "airplane"
-	elif (id == 1):
-		return "automobile"
-	elif (id == 2):
-		return "bird"
-	elif (id == 3):
-		return "cat"
-	elif (id == 4):
-		return "deer"
-	elif (id == 5):
-		return "dog"
-	elif (id == 6):
-		return "frog"
-	elif (id == 7):
-		return "horse"
-	elif (id == 8):
-		return "ship"
-	elif (id == 9):
-		return "truck"
-
-
+	id2labelMap = {0: "airplane",
+				   1: "car",
+				   2: "bird",
+				   3: "cat",
+				   4: "deer",
+				   5: "dog",
+				   6: "frog",
+				   7: "horse",
+				   8: "ship",
+				   9: "truck"}
+	return id2labelMap[id]
 
 
 def main():
